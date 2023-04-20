@@ -1,11 +1,20 @@
 document.addEventListener("DOMContentLoaded", async ev => {
     /** @type Array<string> */
     let urls = await chrome.webview.hostObjects.Manager.List();
-
-    urls.map(url => { return { "group": url.substring(url.indexOf("/")), "url": url }; });
-
-    for (let url of await chrome.webview.hostObjects.Manager.List()) {
-        document.body.appendChild(createImage(url));
+    let mapped = urls.reduce((map, url) => {
+        let group = url.substring(0, url.lastIndexOf("/")).replace("img/", "").replace("/", "_");
+        let list = map.get(group) ?? [];
+        list.push(url);
+        map.set(group, list);
+        return map;
+    }, new Map());
+    console.log(mapped);
+    for (let entry of mapped) {
+        let wrap = createGroup(entry[0]);
+        for (let url of entry[1]) {
+            wrap.appendChild(createImage(url));
+        }
+        document.body.appendChild(wrap);
     }
 });
 document.addEventListener("dragover", ev => {
@@ -15,14 +24,30 @@ document.addEventListener("dragover", ev => {
 document.addEventListener("drop", async ev => {
     ev.stopPropagation();
     ev.preventDefault();
+
+    let group = ev.target.closest("[data-group]")?.getAttribute("data-group") ?? `${new Date().getTime()}`;
+    let target = ev.target.closest("[data-group]");
+    if (!target) {
+        target = createGroup(group);
+        document.body.appendChild(target);
+    }
+
     for (let file of ev.dataTransfer.files) {
         let data = await new FileReaderEx().readAsDataURL(file);
-        let url = await chrome.webview.hostObjects.Manager.Put(new Date().getTime(), new Date().getTime() + "", data);
+        let url = await chrome.webview.hostObjects.Manager.Put(group, new Date().getTime() + "", data);
         if (url) {
-            document.body.appendChild(createImage(url));
+            target.appendChild(createImage(url));
         }
     }
 });
+const createGroup = (group) => {
+    let outer = document.createElement("div");
+    outer.setAttribute("data-group", group);
+    outer.setAttribute("id", `group_${group}`);
+    outer.classList.add("border", "rounded", "p-2");
+
+    return outer;
+}
 const createImage = url => {
     let img = document.createElement("img");
     img.src = url;

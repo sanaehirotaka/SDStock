@@ -5,6 +5,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:Wpf="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf" x:Class="SDStock.MainWindow"
         mc:Ignorable="d"
-        Title="MainWindow" Height="500" Width="800" Loaded="Window_Loaded">
+        Title="MainWindow" Height="900" Width="1200" Loaded="Window_Loaded">
     <Wpf:WebView2 x:Name="webView2" Source="https://www.microsoft.com"/>
 </Window>

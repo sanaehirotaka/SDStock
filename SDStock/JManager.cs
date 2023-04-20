@@ -12,19 +12,22 @@ public record JManager(IConfigurationRoot Configuration)
 {
     public string[] List()
     {
-        return Directory.GetFiles(Path.Combine(Configuration["Assets"]!, "img"))
+        if (!Directory.Exists(Path.Combine(Configuration["Assets"]!, "img")))
+        {
+            return Array.Empty<string>(); 
+        }
+        return Directory.GetFiles(Path.Combine(Configuration["Assets"]!, "img"), "*", SearchOption.AllDirectories)
             .Order()
             .Select(name => Path.GetRelativePath(Configuration["Assets"]!, name).Replace('\\', '/'))
             .ToArray();
     }
 
-    public string? Put(string name, string dataUrl)
+    public string? Put(string group, string name, string dataUrl)
     {
         var data = dataUrl[(dataUrl.IndexOf(',') + 1)..];
-
         var mime = dataUrl[(dataUrl.IndexOf(':') + 1)..dataUrl.IndexOf(';')];
         var ext = Mime2Ext(mime);
-        var dir = Path.Combine("img");
+        var dir = Path.Combine(Configuration["Assets"]!, "img", group);
         var path = Path.Combine(dir, $"{name}.{ext}");
 
         if (ext is null)
@@ -35,8 +38,8 @@ public record JManager(IConfigurationRoot Configuration)
         {
             Directory.CreateDirectory(dir);
         }
-        File.WriteAllBytes(Path.Combine(Configuration["Assets"]!, path), Convert.FromBase64String(data));
-        return path.Replace('\\', '/');
+        File.WriteAllBytes(path, Convert.FromBase64String(data));
+        return Path.GetRelativePath(Configuration["Assets"]!, path).Replace('\\', '/');
     }
 
     private string? Mime2Ext(string mime)

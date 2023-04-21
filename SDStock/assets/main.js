@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", async ev => {
         map.set(group, list);
         return map;
     }, new Map());
-    console.log(mapped);
     for (let entry of mapped) {
         let wrap = createGroup(entry[0]);
         for (let url of entry[1]) {
@@ -58,6 +57,14 @@ const createImage = url => {
     outer.appendChild(img);
     let close = document.createElement("button");
     close.classList.add("p-1", "btn-close");
+    close.addEventListener("click", ev => {
+        chrome.webview.hostObjects.Manager.Delete(url);
+        var parent = outer.parentNode;
+        parent.removeChild(outer);
+        if (parent.querySelectorAll(".img-outer").length == 0) {
+            parent.parentNode.removeChild(parent);
+        }
+    })
     outer.appendChild(close);
     return outer;
 }

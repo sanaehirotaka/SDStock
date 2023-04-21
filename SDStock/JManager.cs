@@ -3,6 +3,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using static System.Net.Mime.MediaTypeNames;
+using System.Xml.Linq;
 
 namespace SDStock;
 
@@ -40,6 +42,20 @@ public record JManager(IConfigurationRoot Configuration)
         }
         File.WriteAllBytes(path, Convert.FromBase64String(data));
         return Path.GetRelativePath(Configuration["Assets"]!, path).Replace('\\', '/');
+    }
+
+    public void Delete(string url)
+    {
+        var path = Path.Combine(Configuration["Assets"]!, url);
+        if (File.Exists(path))
+        {
+            File.Delete(path);
+            var dir = Directory.GetParent(path);
+            if (dir is not null && !dir.EnumerateFiles().Any())
+            {
+                dir.Delete();
+            }
+        }
     }
 
     private string? Mime2Ext(string mime)

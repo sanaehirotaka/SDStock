@@ -3,8 +3,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using static System.Net.Mime.MediaTypeNames;
-using System.Xml.Linq;
 
 namespace SDStock;
 
